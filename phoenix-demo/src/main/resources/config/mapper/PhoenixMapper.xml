@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.cloudera.phoenixdemo.dao.PhoenixMapper" >
+  <resultMap id="BaseResultMap" type="com.cloudera.phoenixdemo.entity.PhoenixObject" >
+    <result column="S1" property="s1" jdbcType="VARCHAR" />
+    <result column="S2" property="s2" jdbcType="VARCHAR" />
+    <result column="S3" property="s3" jdbcType="VARCHAR" />
+    <result column="S4" property="s4" jdbcType="VARCHAR" />
+    <result column="S5" property="s5" jdbcType="VARCHAR" />
+    <result column="S6" property="s6" jdbcType="VARCHAR" />
+    <result column="S7" property="s7" jdbcType="VARCHAR" />
+    <result column="S8" property="s8" jdbcType="VARCHAR" />
+    <result column="S9" property="s9" jdbcType="VARCHAR" />
+    <result column="S10" property="s10" jdbcType="VARCHAR" />
+    <result column="S11" property="s11" jdbcType="VARCHAR" />
+  </resultMap>
+  <resultMap id="SchemaMap" type="com.cloudera.phoenixdemo.entity.PhoenixSchemaObject" >
+    <result column="KEYS" property="keys" jdbcType="VARCHAR" />
+    <result column="F1" property="f1" jdbcType="VARCHAR" />
+    <result column="F2" property="f2" jdbcType="VARCHAR" />
+    <result column="S1" property="s1" jdbcType="VARCHAR" />
+    <result column="S2" property="s2" jdbcType="VARCHAR" />
+  </resultMap>
+
+    <select id="getAll" resultMap="BaseResultMap" >
+        SELECT S1,S2,S3 FROM HBASE_TEST
+    </select>
+    <select id="getSchemaAll" resultMap="SchemaMap" >
+        SELECT F1,S1 FROM MY_SCHEMA.SCHEMA_TEST1
+    </select>
+</mapper>
