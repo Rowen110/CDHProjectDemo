@@ -2,7 +2,7 @@ package com.cloudera.phoenixdemo.entity;
 
 /**
  * @author Charles
- * @package com.eg.egsc.egc.osscomponent.mapper.entity
+ * @package com.cloudera.phoenixdemo.entity
  * @classname PhoenixObject
  * @description TODO
  * @date 2019-4-22 15:19

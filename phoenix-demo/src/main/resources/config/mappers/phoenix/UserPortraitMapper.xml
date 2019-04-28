@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cloudera.phoenixdemo.dao.phoenix.UserPortraitMapper">
+    <resultMap id="BaseResultMap" type="com.cloudera.phoenixdemo.entity.BaseUserPortrait">
+        <result column="ROWKEY" property="rowkey" jdbcType="VARCHAR"/>
+        <result column="USER_NAME" property="userName" jdbcType="VARCHAR"/>
+        <result column="USER_SEX" property="userSex" jdbcType="VARCHAR"/>
+        <result column="USER_AGE" property="userAge" jdbcType="VARCHAR"/>
+        <result column="USER_CAREER" property="userCareer" jdbcType="VARCHAR"/>
+        <result column="USER_DEGREE" property="userDegree" jdbcType="VARCHAR"/>
+        <result column="IS_MARRIED" property="isMarried" jdbcType="VARCHAR"/>
+        <result column="HAS_CHRILD" property="hasChrild" jdbcType="VARCHAR"/>
+        <result column="FAMILY_SUM" property="familySum" jdbcType="VARCHAR"/>
+        <result column="LOCATION_PROVINCE" property="locationProvince" jdbcType="VARCHAR"/>
+        <result column="LOCATION_CITY" property="locationCity" jdbcType="VARCHAR"/>
+        <result column="CITY_TYPE" property="cityType" jdbcType="VARCHAR"/>
+        <result column="COMMUNITY" property="community" jdbcType="VARCHAR"/>
+        <result column="FLOOR" property="floor" jdbcType="VARCHAR"/>
+        <result column="HOUSE_TYPE" property="houseType" jdbcType="VARCHAR"/>
+        <result column="HOUSE_AREA" property="houseArea" jdbcType="VARCHAR"/>
+        <result column="FITMENT_TYPE" property="fitmentType" jdbcType="VARCHAR"/>
+        <result column="ESTATE_TYPE" property="estateType" jdbcType="VARCHAR"/>
+        <result column="PURCHASE_DATE" property="purchaseDate" jdbcType="VARCHAR"/>
+        <result column="PAYMENT_TYPE" property="paymentType" jdbcType="VARCHAR"/>
+        <result column="TOTAL_PRICES" property="totalPrices" jdbcType="VARCHAR"/>
+        <result column="DOWN_PAYMENT_PERCENT" property="downPaymentPercent" jdbcType="VARCHAR"/>
+        <result column="DOWN_PAYMENT_PRICES" property="downPaymentPrices" jdbcType="VARCHAR"/>
+        <result column="LOANS_TYPE" property="loansType" jdbcType="VARCHAR"/>
+        <result column="HAS_CAR" property="hasCar" jdbcType="VARCHAR"/>
+        <result column="HAS_CARPORT" property="hasCarport" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!--ROWKEY,  USER_NAME,  USER_SEX,  USER_AGE,  USER_CAREER,  USER_DEGREE,-->
+    <!--IS_MARRIED,  HAS_CHRILD,  FAMILY_SUM,  LOCATION_PROVINCE,  LOCATION_CITY,-->
+    <!--CITY_TYPE,  COMMUNITY,  FLOOR,  HOUSE_TYPE,  HOUSE_AREA,  FITMENT_TYPE,-->
+    <!--ESTATE_TYPE,  PURCHASE_DATE,  PAYMENT_TYPE,  TOTAL_PRICES,  DOWN_PAYMENT_PERCENT,-->
+    <!--DOWN_PAYMENT_PRICES,  LOANS_TYPE,  HAS_CAR,  HAS_CARPORT,-->
+
+    <!--rowkey,userName,userSex,-->
+    <!--userAge,userCareer,userDegree,-->
+    <!--isMarried,hasChrild,familySum,-->
+    <!--locationProvince,locationCity,cityType,-->
+    <!--community,floor,houseType,houseArea,-->
+    <!--fitmentType,estateType,purchaseDate,-->
+    <!--paymentType,totalPrices,downPaymentPercent,-->
+    <!--downPaymentPrices,loansType,hasCar,hasCarport,-->
+
+    <select id="upsertUserPortrait" resultType="string"
+            parameterType="com.cloudera.phoenixdemo.entity.BaseUserPortrait">
+        upsert into BASE_USER_PORTRAIT values (
+           #{rowkey},#{userName},#{userSex},#{userAge},#{userCareer},#{userDegree},
+           #{isMarried},#{hasChrild},#{familySum},#{locationProvince},#{locationCity},
+           #{cityType},#{community},#{floor},#{houseType},#{houseArea},#{fitmentType},
+           #{estateType},#{purchaseDate},#{paymentType},#{totalPrices},#{downPaymentPercent},
+           #{downPaymentPrices},#{loansType},#{hasCar},#{hasCarport}
+        )
+    </select>
+
+</mapper>

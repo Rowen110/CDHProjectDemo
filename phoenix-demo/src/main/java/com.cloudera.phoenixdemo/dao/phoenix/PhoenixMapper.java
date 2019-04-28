@@ -1,4 +1,4 @@
-package com.cloudera.phoenixdemo.dao;
+package com.cloudera.phoenixdemo.dao.phoenix;
 
 import com.cloudera.phoenixdemo.entity.PhoenixObject;
 import com.cloudera.phoenixdemo.entity.PhoenixSchemaObject;

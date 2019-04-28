@@ -1,6 +1,6 @@
 package com.cloudera.phoenixdemo.service.impl;
 
-import com.cloudera.phoenixdemo.dao.PhoenixMapper;
+import com.cloudera.phoenixdemo.dao.phoenix.PhoenixMapper;
 import com.cloudera.phoenixdemo.entity.PhoenixObject;
 import com.cloudera.phoenixdemo.entity.PhoenixSchemaObject;
 import com.cloudera.phoenixdemo.service.IPhoenixService;

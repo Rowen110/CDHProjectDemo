@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
-<mapper namespace="com.cloudera.phoenixdemo.dao.PhoenixMapper" >
+<mapper namespace="com.cloudera.phoenixdemo.dao.phoenix.PhoenixMapper" >
   <resultMap id="BaseResultMap" type="com.cloudera.phoenixdemo.entity.PhoenixObject" >
     <result column="S1" property="s1" jdbcType="VARCHAR" />
     <result column="S2" property="s2" jdbcType="VARCHAR" />
