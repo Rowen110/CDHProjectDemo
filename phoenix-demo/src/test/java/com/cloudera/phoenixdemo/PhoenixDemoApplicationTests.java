@@ -1,6 +1,7 @@
 package com.cloudera.phoenixdemo;
 
 import com.cloudera.phoenixdemo.entity.BaseUserPortrait;
+import com.cloudera.phoenixdemo.entity.PageModel;
 import com.cloudera.phoenixdemo.entity.PhoenixObject;
 import com.cloudera.phoenixdemo.entity.PhoenixSchemaObject;
 import com.cloudera.phoenixdemo.service.IPhoenixService;
@@ -82,8 +83,20 @@ public class PhoenixDemoApplicationTests {
         bean.setHasCarport(String.valueOf(RandomUser.getNum(0, 2)));
 
         System.out.println(bean);
-        String s = service.upsertUserPortrait(bean);
+        int s = service.upsertUserPortrait(bean);
         System.out.println("============================" + s + "=================================");
+    }
+
+    @Test
+    public void testTagDataService(){
+        List<Integer> list1 = Arrays.asList(1, 4);
+        PageModel<Object> pageModel = new PageModel<>();
+        pageModel.setIds(new Integer[]{1,4});
+        pageModel.setPageNum(0);
+        pageModel.setLimit(300);
+        PageModel<BaseUserPortrait> result = service.getBaseUserByTagDataId(pageModel);
+
+        System.out.println(result);
     }
 
 }

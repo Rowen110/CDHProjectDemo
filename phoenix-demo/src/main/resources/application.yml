@@ -14,14 +14,14 @@ spring:
       max-active: 15
     master:
       driverClassName: com.mysql.jdbc.Driver
-      url: jdbc:mysql://10.101.70.13:3306/hdsc_db?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&autoReconnect=true
-      username: root
-      password: Test1234
-    slave:
-      driverClassName: com.mysql.jdbc.Driver
       url: jdbc:mysql://bigdata-dev-42:3306/bigdata_base
       username: root
       password: hd123456
+    slave:
+      driverClassName: com.mysql.jdbc.Driver
+      url: jdbc:mysql://10.101.70.13:3306/hdsc_db?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&autoReconnect=true
+      username: root
+      password: Test1234
     phoenix:
       driverClassName: org.apache.phoenix.jdbc.PhoenixDriver
       url: jdbc:phoenix:10.101.71.41,10.101.71.42,10.101.71.43:2181/hbase

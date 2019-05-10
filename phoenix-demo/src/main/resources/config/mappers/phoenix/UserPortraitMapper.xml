@@ -45,8 +45,7 @@
     <!--paymentType,totalPrices,downPaymentPercent,-->
     <!--downPaymentPrices,loansType,hasCar,hasCarport,-->
 
-    <select id="upsertUserPortrait" resultType="string"
-            parameterType="com.cloudera.phoenixdemo.entity.BaseUserPortrait">
+    <update id="upsertUserPortrait" parameterType="com.cloudera.phoenixdemo.entity.BaseUserPortrait">
         upsert into BASE_USER_PORTRAIT values (
            #{rowkey},#{userName},#{userSex},#{userAge},#{userCareer},#{userDegree},
            #{isMarried},#{hasChrild},#{familySum},#{locationProvince},#{locationCity},
@@ -54,6 +53,22 @@
            #{estateType},#{purchaseDate},#{paymentType},#{totalPrices},#{downPaymentPercent},
            #{downPaymentPrices},#{loansType},#{hasCar},#{hasCarport}
         )
-    </select>
+    </update>
 
+    <select id="getBaseUserByTagDataId" resultMap="BaseResultMap" parameterType="java.util.List">
+        SELECT
+        ROWKEY,BASICINFO.USER_NAME,BASICINFO.USER_SEX,BASICINFO.USER_AGE,BASICINFO.USER_CAREER,BASICINFO.USER_DEGREE,
+        BASICINFO.IS_MARRIED,BASICINFO.HAS_CHRILD,BASICINFO.FAMILY_SUM,BASICINFO.LOCATION_PROVINCE,BASICINFO.LOCATION_CITY,
+        BASICINFO.CITY_TYPE,BASICINFO.COMMUNITY,BASICINFO.FLOOR,BASICINFO.HOUSE_TYPE,BASICINFO.HOUSE_AREA,BASICINFO.FITMENT_TYPE,
+        BASICINFO.ESTATE_TYPE,BASICINFO.PURCHASE_DATE,BASICINFO.PAYMENT_TYPE,BASICINFO.TOTAL_PRICES,BASICINFO.DOWN_PAYMENT_PERCENT,
+        BASICINFO.DOWN_PAYMENT_PRICES,BASICINFO.LOANS_TYPE,BASICINFO.HAS_CAR,BASICINFO.HAS_CARPORT
+        FROM BASE_USER_PORTRAIT
+        <where>
+            <if test="tagDataList != null and tagDataList.size > 0">
+                <foreach collection="tagDataList" item="listItem" open=" "  close=" " separator=" " >
+                    ${listItem.filterCondition}
+                </foreach>
+            </if>
+        </where>
+    </select>
 </mapper>
