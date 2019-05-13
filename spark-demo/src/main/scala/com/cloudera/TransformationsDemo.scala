@@ -14,7 +14,7 @@ object TransformationsDemo {
 
   def main(args: Array[String]): Unit = {
 
-    val conf = new SparkConf().setAppName("Simple Application").setMaster("yarn").set("spark.submit.deployMode", "client")
+    val conf = new SparkConf().setAppName("Simple Application").setMaster("local").set("spark.submit.deployMode", "client")
     //      .set("spark.master", "yarn")
     //      .set("spark.submit.deployMode", "client")
     //
@@ -39,9 +39,10 @@ object TransformationsDemo {
     val sc = sparkSession.sparkContext
     val list = List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
     val rdd = sc.parallelize(list)
+    rdd.foreach(f => println(f))
     while (true) {
       rdd.foreach(f => println(f))
-      Thread.sleep(30000)
+      Thread.sleep(3000)
     }
   }
 }

@@ -6,12 +6,6 @@
     <artifactId>cdh-project</artifactId>
     <version>1.0-SNAPSHOT</version>
 
-    <modules>
-        <!--<module>spark-demo</module>-->
-        <!--<module>sqoop-demo</module>-->
-        <!--<module>phoenix-demo</module>-->
-    </modules>
-
     <packaging>pom</packaging>
 
     <!-- 项目的名称 -->

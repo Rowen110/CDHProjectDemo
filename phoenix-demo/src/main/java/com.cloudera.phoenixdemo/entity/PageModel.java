@@ -1,7 +1,6 @@
 package com.cloudera.phoenixdemo.entity;
 
 import com.github.pagehelper.PageInfo;
-import lombok.Data;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -12,8 +11,6 @@ import java.util.List;
  * Created by zc on 2018/4/10.
  */
 
-@Data
-@SuppressWarnings("unchecked")
 public class PageModel<T> {
     /*
     分页模型
@@ -60,6 +57,90 @@ public class PageModel<T> {
             limit = 0;
         }
         this.paging = paging;
+    }
+
+    public boolean isPaging() {
+        return paging;
+    }
+
+    public Integer getPageNum() {
+        return pageNum;
+    }
+
+    public void setPageNum(Integer pageNum) {
+        this.pageNum = pageNum;
+    }
+
+    public Integer getLimit() {
+        return limit;
+    }
+
+    public void setLimit(Integer limit) {
+        this.limit = limit;
+    }
+
+    public int getPageCount() {
+        return pageCount;
+    }
+
+    public void setPageCount(int pageCount) {
+        this.pageCount = pageCount;
+    }
+
+    public long getTotal() {
+        return total;
+    }
+
+    public void setTotal(long total) {
+        this.total = total;
+    }
+
+    public boolean isLastPage() {
+        return lastPage;
+    }
+
+    public void setLastPage(boolean lastPage) {
+        this.lastPage = lastPage;
+    }
+
+    public String getOrderBy() {
+        return orderBy;
+    }
+
+    public void setOrderBy(String orderBy) {
+        this.orderBy = orderBy;
+    }
+
+    public Object getTotalData() {
+        return totalData;
+    }
+
+    public void setTotalData(Object totalData) {
+        this.totalData = totalData;
+    }
+
+    public List<T> getResults() {
+        return results;
+    }
+
+    public void setResults(List<T> results) {
+        this.results = results;
+    }
+
+    public String getCondition() {
+        return condition;
+    }
+
+    public void setCondition(String condition) {
+        this.condition = condition;
+    }
+
+    public Integer[] getIds() {
+        return ids;
+    }
+
+    public void setIds(Integer[] ids) {
+        this.ids = ids;
     }
 
     public static <T> PageModel<T> convertToPageModel(PageInfo<T> pageResult) {
