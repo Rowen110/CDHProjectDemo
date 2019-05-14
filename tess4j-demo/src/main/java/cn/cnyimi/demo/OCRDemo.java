@@ -1,9 +1,12 @@
 package cn.cnyimi.demo;
+
 import net.sourceforge.tess4j.ITesseract;
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 
 /**
  * @author Charles
@@ -31,4 +34,5 @@ public class OCRDemo {
         // 输出识别结果
         System.out.println("OCR Result: \n" + ocrResult + "\n 耗时：" + (System.currentTimeMillis() - startTime) + "ms");
     }
+
 }
