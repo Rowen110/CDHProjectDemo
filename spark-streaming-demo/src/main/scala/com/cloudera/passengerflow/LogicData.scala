@@ -1,5 +1,9 @@
 package com.cloudera.passengerflow
 
+import org.apache.log4j.Logger
+import org.apache.spark.broadcast.Broadcast
+import redis.clients.jedis.Pipeline
+
 object LogicData {
 
   private val logger: Logger = Logger.getLogger(this.getClass)

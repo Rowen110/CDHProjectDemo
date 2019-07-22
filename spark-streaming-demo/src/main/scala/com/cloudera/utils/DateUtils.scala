@@ -3,6 +3,8 @@ package com.cloudera.utils
 import java.text.SimpleDateFormat
 import java.util.{Calendar, Date}
 
+import org.apache.kafka.common.TopicPartition
+
 object DateUtils {
   /**
     * 获取今天日期
@@ -56,4 +58,32 @@ object DateUtils {
     new SimpleDateFormat(format).format(cal.getTime())
   }
 
+
+  def main(args: Array[String]): Unit = {
+      val topics = Map("test1"-> 2,"test2"-> 3,"test3"-> 4)
+      var fromOffsets: Map[TopicPartition, Long] = Map()
+
+
+    topics.foreach(topic => {
+      println(topic)
+      for (i <- 0 until topic._2.toInt) {
+        val topic_partition_key = topic + "_" + i
+
+      }
+    })
+//      for (topic <- topics){
+//        val lastSavedOffset = 0l
+//        for (i <- 0 until partition) {
+//          val topic_partition_key = topic + "_" + i
+//          try {
+//            fromOffsets += ((new TopicPartition(topic, i) -> lastSavedOffset.toLong))
+//          } catch {
+//            case ex: Exception => println(ex.getMessage)
+//              println("get lastSavedOffset error, lastSavedOffset from redis [" + lastSavedOffset + "] ")
+//              System.exit(1)
+//          }
+//        }
+//      }
+    println(fromOffsets)
+  }
 }

@@ -1,5 +1,6 @@
 package com.cloudera
 
+import java.text.SimpleDateFormat
 import java.util.{Date, Properties, UUID}
 
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig, ProducerRecord}
@@ -11,7 +12,7 @@ object MyScalaProducer {
 
     // 设置 Kafka 配置属性
     val props = new Properties
-    props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "bigdata-dev-43:9092,slave2:9092,slave1:9092")
+    props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "10.101.71.42:9092")
     props.put(ProducerConfig.ACKS_CONFIG, "all")
     props.put(ProducerConfig.RETRIES_CONFIG, "0")
     props.put(ProducerConfig.BATCH_SIZE_CONFIG, "16384")
@@ -25,15 +26,14 @@ object MyScalaProducer {
 
     val producer = new KafkaProducer[String, String](props)
 
-    val TOPIC_NAME = "my-topic"
+    val TOPIC_NAME = "test3"
 
     // 产生并发送消息
-    val events = 100
+    val events = 100000
     for (i <- 0 until events) {
-      val key = "Key-" + i
-      val runtime = new Date().getTime
-      val message = s"Message-$i:$runtime,${UUID.randomUUID()}"
-
+      val key = "Key-test3-" + i
+      val runtime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date())
+      val message = s"test3|$i|$runtime|${UUID.randomUUID()}"
       val record = new ProducerRecord[String, String](TOPIC_NAME, key, message)
       producer.send(record)
       println(key + " ---- " + message)
