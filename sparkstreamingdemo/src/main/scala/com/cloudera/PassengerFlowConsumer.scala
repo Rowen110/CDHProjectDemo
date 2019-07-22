@@ -7,6 +7,7 @@ import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 import org.apache.spark.streaming.kafka010.HasOffsetRanges
 import org.apache.spark.streaming.{Seconds, StreamingContext}
+import redis.clients.jedis.Pipeline
 
 import scala.collection.immutable.Map
 
@@ -16,7 +17,7 @@ object PassengerFlowConsumer {
 
   def main(args: Array[String]): Unit = {
 
-    val topic: String = ConfigUtils.getProperty("kafka1.passengerflow.topic")
+    val topic: String = ConfigUtils.getProperty("kafka.input.topic")
 
     val kafkaParams = ConfigUtils.getKafkaConsumerParams()
 
@@ -24,7 +25,12 @@ object PassengerFlowConsumer {
 
     JedisPoolUtils.makePool(ConfigUtils.getRedisConfig)
 
-    val conf = new SparkConf().setIfMissing("spark.master", "local[2]").setAppName("passengerFlowCount")
+    val conf = new SparkConf().setIfMissing("spark.master", "local[2]")
+      //开启背压
+      .set("spark.streaming.backpressure.enabled","true")
+      //设置背压大小
+      .set("spark.streaming.kafka.maxRatePerPartition","5000")
+      .setAppName("sparkstreaming-kafka-test")
 
 
     val streamingContext = new StreamingContext(conf, Seconds(5))
@@ -42,6 +48,7 @@ object PassengerFlowConsumer {
 
     //开始处理批次消息
     kafkaStream.foreachRDD(rdd => {
+
       //获取当前批次的RDD的偏移量
       val offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
 
@@ -58,17 +65,18 @@ object PassengerFlowConsumer {
 
 
         val profileTuples: Array[(String, String, String)] = ConfigUtils.getFlowproFile(jedisClient)
+
         // 广播组织配置信息
         val broadcast: Broadcast[Array[(String, String, String)]] = streamingContext.sparkContext.broadcast(profileTuples)
 
         val pipeline: Pipeline = jedisClient.pipelined()
 
         //开启事务
-        pipeline.multi() //逐条处理消息
+        pipeline.multi()
+        //逐条处理消息
         try {
           result.foreach(record => {
-
-//            客流统计后台逻辑
+            //客流统计后台逻辑
             LogicData.passengerflow(pipeline,record,broadcast)
             //大屏数据逻辑
             LogicData.bigScreen(pipeline,record,broadcast)
@@ -80,12 +88,11 @@ object PassengerFlowConsumer {
           // 读取Redis中大屏相关指标统计结果
           val bigScreenJson: String = BigScreenStat.getBigScreenStatResult(jedisClient)
           // 将统计数据发送到Kafka
-          kafkaProducer.value.send(ConfigUtils.getProperty("Kafka1.bigscreen.topic"), bigScreenJson)
+          kafkaProducer.value.send(ConfigUtils.getProperty("Kafka.output.topic"), bigScreenJson)
           //更新offset到zookeeper中
-//          KafkaZkUtils.saveOffsets(zkClient,topic,KafkaZkUtils.getZkPath(kafkaParams,topic),rdd)
+          KafkaZkUtils.saveOffsets(zkClient,topic,KafkaZkUtils.getZkPath(kafkaParams,topic),rdd)
         } catch {
           case e: Exception => {
-            logger.error("send messages to kafka topic failed", e)
             pipeline.discard()
           }
         } finally {

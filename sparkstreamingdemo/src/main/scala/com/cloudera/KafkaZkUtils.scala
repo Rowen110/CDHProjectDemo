@@ -1,5 +1,7 @@
 package com.cloudera
 
+import kafka.utils.{ZKGroupTopicDirs, ZkUtils}
+import org.I0Itec.zkclient.ZkClient
 import org.apache.kafka.clients.consumer.{ConsumerConfig, ConsumerRecord}
 import org.apache.kafka.common.TopicPartition
 import org.apache.log4j.Logger

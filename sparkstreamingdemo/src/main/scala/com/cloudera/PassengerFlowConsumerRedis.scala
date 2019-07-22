@@ -1,5 +1,16 @@
 package com.cloudera
 
+import org.apache.kafka.clients.consumer.{ConsumerConfig, ConsumerRecord}
+import org.apache.kafka.common.TopicPartition
+import org.apache.kafka.common.serialization.StringDeserializer
+import org.apache.log4j.Logger
+import org.apache.spark.SparkConf
+import org.apache.spark.rdd.RDD
+import org.apache.spark.streaming.dstream.InputDStream
+import org.apache.spark.streaming.kafka010.{ConsumerStrategies, HasOffsetRanges, KafkaUtils, LocationStrategies}
+import org.apache.spark.streaming.{Seconds, StreamingContext}
+import redis.clients.jedis.{Jedis, Pipeline}
+
 object PassengerFlowConsumerRedis {
   private val logger: Logger = Logger.getLogger(this.getClass)
 
@@ -33,7 +44,7 @@ object PassengerFlowConsumerRedis {
 
     val jedis: Jedis = JedisPoolUtils.getPool.getResource
 
-    val partition = 1
+    val partition = 2
 
     val fromOffsets: Map[TopicPartition, Long] = readOffsets(jedis, topic, partition)
     val kafkaStream: InputDStream[ConsumerRecord[String, String]] = KafkaUtils.createDirectStream(
@@ -67,7 +78,6 @@ object PassengerFlowConsumerRedis {
 
       values.foreach(println(_))
 
-      //      val results = yourCalculation(rdd)
       //更新Offset
       offsetRanges.foreach { offsetRange =>
         println("partition : " + offsetRange.partition + " fromOffset:  " + offsetRange.fromOffset + " untilOffset: " + offsetRange.untilOffset)

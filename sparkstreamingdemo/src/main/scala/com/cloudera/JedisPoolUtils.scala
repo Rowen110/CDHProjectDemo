@@ -1,5 +1,7 @@
 package com.cloudera
 
+import redis.clients.jedis.{JedisPool, JedisPoolConfig}
+
 case class RedisConfig(redisHost: String, redisPort: Int, redisTimeout: Int, maxTotal: Int, maxIdle: Int, minIdle: Int) extends  Serializable
 object JedisPoolUtils extends Serializable {
 

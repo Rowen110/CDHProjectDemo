@@ -1,11 +1,14 @@
 package com.cloudera
 
 import com.google.gson.Gson
+import kafka.utils.ZkUtils
+import org.I0Itec.zkclient.ZkClient
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.config.SslConfigs
 import org.apache.kafka.common.serialization.{StringDeserializer, StringSerializer}
+import redis.clients.jedis.Jedis
 
 import scala.collection.immutable.Map
 
@@ -29,17 +32,17 @@ object ConfigUtils {
     */
   def getKafkaConsumerParams(): Map[String, Object] = {
     Map[String, Object](
-      ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG -> properties.getProperty("kafka1.bootstrap.servers"),
+      ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG -> properties.getProperty("kafka.bootstrap.servers"),
       ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG -> classOf[StringDeserializer],
       ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG -> classOf[StringDeserializer],
-      ConsumerConfig.GROUP_ID_CONFIG -> properties.getProperty("kafka1.group.id"),
-      ConsumerConfig.AUTO_OFFSET_RESET_CONFIG -> properties.getProperty("kafka1.auto.offset.reset"),
+      ConsumerConfig.GROUP_ID_CONFIG -> properties.getProperty("kafka.group.id"),
+      ConsumerConfig.AUTO_OFFSET_RESET_CONFIG -> properties.getProperty("kafka.auto.offset.reset"),
       ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG -> (false: java.lang.Boolean),
-      CommonClientConfigs.SECURITY_PROTOCOL_CONFIG -> properties.getProperty("kafka1.security.protocol"),
-      SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG -> properties.getProperty("kafka1.client.truststore.jks"),
-      SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG -> properties.getProperty("kafka1.client.truststore.jks.password"),
-      SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG -> properties.getProperty("kafka1.client.keystore.jks"),
-      SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG -> properties.getProperty("kafka1.client.keystore.jks.password")
+      CommonClientConfigs.SECURITY_PROTOCOL_CONFIG -> properties.getProperty("kafka.security.protocol"),
+      SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG -> properties.getProperty("kafka.client.truststore.jks"),
+      SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG -> properties.getProperty("kafka.client.truststore.jks.password"),
+      SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG -> properties.getProperty("kafka.client.keystore.jks"),
+      SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG -> properties.getProperty("kafka.client.keystore.jks.password")
     )
   }
 
@@ -49,19 +52,19 @@ object ConfigUtils {
     */
   def getKafkaProducerParams(): Map[String, Object] = {
     Map[String, Object](
-      ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> properties.getProperty("kafka1.bootstrap.servers"),
-      ProducerConfig.ACKS_CONFIG -> properties.getProperty("kafka1.acks"),
-      ProducerConfig.RETRIES_CONFIG -> properties.getProperty("kafka1.retries"),
-      ProducerConfig.BATCH_SIZE_CONFIG -> properties.getProperty("kafka1.batch.size"),
-      ProducerConfig.LINGER_MS_CONFIG -> properties.getProperty("kafka1.linger.ms"),
-      ProducerConfig.BUFFER_MEMORY_CONFIG -> properties.getProperty("kafka1.buffer.memory"),
+      ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> properties.getProperty("kafka.bootstrap.servers"),
+      ProducerConfig.ACKS_CONFIG -> properties.getProperty("kafka.acks"),
+      ProducerConfig.RETRIES_CONFIG -> properties.getProperty("kafka.retries"),
+      ProducerConfig.BATCH_SIZE_CONFIG -> properties.getProperty("kafka.batch.size"),
+      ProducerConfig.LINGER_MS_CONFIG -> properties.getProperty("kafka.linger.ms"),
+      ProducerConfig.BUFFER_MEMORY_CONFIG -> properties.getProperty("kafka.buffer.memory"),
       ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG -> classOf[StringSerializer],
       ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG -> classOf[StringSerializer],
-      CommonClientConfigs.SECURITY_PROTOCOL_CONFIG -> properties.getProperty("kafka1.security.protocol"),
-      SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG -> properties.getProperty("kafka1.client.truststore.jks"),
-      SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG -> properties.getProperty("kafka1.client.truststore.jks.password"),
-      SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG -> properties.getProperty("kafka1.client.keystore.jks"),
-      SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG -> properties.getProperty("kafka1.client.keystore.jks.password")
+      CommonClientConfigs.SECURITY_PROTOCOL_CONFIG -> properties.getProperty("kafka.security.protocol"),
+      SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG -> properties.getProperty("kafka.client.truststore.jks"),
+      SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG -> properties.getProperty("kafka.client.truststore.jks.password"),
+      SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG -> properties.getProperty("kafka.client.keystore.jks"),
+      SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG -> properties.getProperty("kafka.client.keystore.jks.password")
     )
   }
 

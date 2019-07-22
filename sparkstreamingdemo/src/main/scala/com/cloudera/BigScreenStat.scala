@@ -3,6 +3,7 @@ package com.cloudera
 import java.util
 
 import com.google.gson.Gson
+import redis.clients.jedis.Jedis
 
 import scala.collection.JavaConversions._
 import scala.collection.immutable.ListMap
