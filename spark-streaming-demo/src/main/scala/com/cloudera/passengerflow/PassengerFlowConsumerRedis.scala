@@ -1,5 +1,6 @@
-package com.cloudera
+package com.cloudera.passengerflow
 
+import com.cloudera.utils.PropertiesScalaUtils
 import org.apache.kafka.clients.consumer.{ConsumerConfig, ConsumerRecord}
 import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.common.serialization.StringDeserializer

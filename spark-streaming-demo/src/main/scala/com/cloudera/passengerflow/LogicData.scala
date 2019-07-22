@@ -1,8 +1,4 @@
-package com.cloudera
-
-import org.apache.log4j.Logger
-import org.apache.spark.broadcast.Broadcast
-import redis.clients.jedis.Pipeline
+package com.cloudera.passengerflow
 
 object LogicData {
 

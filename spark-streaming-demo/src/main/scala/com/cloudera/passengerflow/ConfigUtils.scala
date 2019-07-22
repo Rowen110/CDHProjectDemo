@@ -1,19 +1,4 @@
-package com.cloudera
-
-import java.util
-
-import com.cloudera.utils.RedisConfig
-import com.google.gson.Gson
-import kafka.utils.ZkUtils
-import org.I0Itec.zkclient.ZkClient
-import org.apache.kafka.clients.consumer.ConsumerConfig
-import org.apache.kafka.clients.producer.ProducerConfig
-import org.apache.kafka.common.serialization.{StringDeserializer, StringSerializer}
-import org.apache.log4j.Logger
-import org.apache.spark.sql.{DataFrame, Row, SparkSession}
-import redis.clients.jedis.Jedis
-
-import scala.collection.immutable.Map
+package com.cloudera.passengerflow
 
 object ConfigUtils {
 

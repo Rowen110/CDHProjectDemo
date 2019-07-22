@@ -1,4 +1,4 @@
-package com.cloudera
+package com.cloudera.utils
 
 import java.text.SimpleDateFormat
 import java.util.{Calendar, Date}
@@ -56,8 +56,4 @@ object DateUtils {
     new SimpleDateFormat(format).format(cal.getTime())
   }
 
-  def main(args: Array[String]): Unit = {
-    println("%02d".format(5 + 1) + "00")
-    println(getCurrentDay())
-  }
 }

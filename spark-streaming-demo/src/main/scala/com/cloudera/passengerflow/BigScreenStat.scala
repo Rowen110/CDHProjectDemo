@@ -1,4 +1,4 @@
-package com.cloudera
+package com.cloudera.passengerflow
 
 import java.util
 import java.util.UUID

@@ -1,4 +1,4 @@
-package com.cloudera
+package com.cloudera.utils
 
 import redis.clients.jedis.{JedisPool, JedisPoolConfig}
 

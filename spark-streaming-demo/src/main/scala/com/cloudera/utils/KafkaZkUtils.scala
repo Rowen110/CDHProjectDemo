@@ -1,4 +1,4 @@
-package com.cloudera
+package com.cloudera.utils
 
 import kafka.utils.{ZKGroupTopicDirs, ZkUtils}
 import org.I0Itec.zkclient.ZkClient

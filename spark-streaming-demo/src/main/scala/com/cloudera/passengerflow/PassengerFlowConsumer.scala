@@ -1,4 +1,4 @@
-package com.cloudera
+package com.cloudera.passengerflow
 
 import java.io.File
 
@@ -15,7 +15,6 @@ import org.apache.spark.streaming.{Seconds, StreamingContext}
 import redis.clients.jedis.Pipeline
 
 import scala.collection.immutable.Map
-
 
 object PassengerFlowConsumer {
   private val logger: Logger = Logger.getLogger(this.getClass)

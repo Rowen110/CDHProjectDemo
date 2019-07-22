@@ -1,4 +1,4 @@
-package com.cloudera
+package com.cloudera.passengerflow
 
 case class PassengerFlowProfile(organizId: String, devices: Array[Device]) extends Serializable
 
