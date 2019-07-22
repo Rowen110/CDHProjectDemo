@@ -1,28 +1,32 @@
 package com.cloudera
 
+import java.util
+
+import com.cloudera.utils.RedisConfig
 import com.google.gson.Gson
 import kafka.utils.ZkUtils
 import org.I0Itec.zkclient.ZkClient
-import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
-import org.apache.kafka.common.config.SslConfigs
 import org.apache.kafka.common.serialization.{StringDeserializer, StringSerializer}
+import org.apache.log4j.Logger
+import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import redis.clients.jedis.Jedis
 
 import scala.collection.immutable.Map
 
 object ConfigUtils {
 
-  val properties = PropertiesScalaUtils.loadProperties("passenger_flow.properties")
+  private val logger: Logger = Logger.getLogger(this.getClass)
 
+  val properties = PropertiesScalaUtils.loadProperties("passenger_flow.properties")
 
   /**
     * 获取 passenger_flow.properties配置文件中 key对应的值
     * @param key
     * @return
     */
-  def getProperty(key: String): String ={
+  def getProperty(key: String): String = {
     properties.getProperty(key)
   }
 
@@ -37,12 +41,12 @@ object ConfigUtils {
       ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG -> classOf[StringDeserializer],
       ConsumerConfig.GROUP_ID_CONFIG -> properties.getProperty("kafka.group.id"),
       ConsumerConfig.AUTO_OFFSET_RESET_CONFIG -> properties.getProperty("kafka.auto.offset.reset"),
-      ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG -> (false: java.lang.Boolean),
-      CommonClientConfigs.SECURITY_PROTOCOL_CONFIG -> properties.getProperty("kafka.security.protocol"),
-      SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG -> properties.getProperty("kafka.client.truststore.jks"),
-      SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG -> properties.getProperty("kafka.client.truststore.jks.password"),
-      SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG -> properties.getProperty("kafka.client.keystore.jks"),
-      SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG -> properties.getProperty("kafka.client.keystore.jks.password")
+      ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG -> (false: java.lang.Boolean)
+      //CommonClientConfigs.SECURITY_PROTOCOL_CONFIG -> properties.getProperty("kafka.security.protocol"),
+      //SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG -> properties.getProperty("kafka.client.truststore.jks"),
+      //SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG -> properties.getProperty("kafka.client.truststore.jks.password"),
+      //SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG -> properties.getProperty("kafka.client.keystore.jks"),
+      //SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG -> properties.getProperty("kafka.client.keystore.jks.password")
     )
   }
 
@@ -59,12 +63,12 @@ object ConfigUtils {
       ProducerConfig.LINGER_MS_CONFIG -> properties.getProperty("kafka.linger.ms"),
       ProducerConfig.BUFFER_MEMORY_CONFIG -> properties.getProperty("kafka.buffer.memory"),
       ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG -> classOf[StringSerializer],
-      ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG -> classOf[StringSerializer],
-      CommonClientConfigs.SECURITY_PROTOCOL_CONFIG -> properties.getProperty("kafka.security.protocol"),
-      SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG -> properties.getProperty("kafka.client.truststore.jks"),
-      SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG -> properties.getProperty("kafka.client.truststore.jks.password"),
-      SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG -> properties.getProperty("kafka.client.keystore.jks"),
-      SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG -> properties.getProperty("kafka.client.keystore.jks.password")
+      ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG -> classOf[StringSerializer]
+      //CommonClientConfigs.SECURITY_PROTOCOL_CONFIG -> properties.getProperty("kafka.security.protocol"),
+      //SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG -> properties.getProperty("kafka.client.truststore.jks"),
+      //SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG -> properties.getProperty("kafka.client.truststore.jks.password"),
+      //SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG -> properties.getProperty("kafka.client.keystore.jks"),
+      //SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG -> properties.getProperty("kafka.client.keystore.jks.password")
     )
   }
 
@@ -98,30 +102,41 @@ object ConfigUtils {
     * @param jedis
     * @return
     */
-  def getFlowproFile(jedis: Jedis): Array[(String, String, String)] = {
+  def getFlowproFile(jedis: Jedis,spark: SparkSession): Array[(String, String, String)] = {
 
     // 从Redis中获取组织关系配置
     val flowProfileKey: String = properties.getProperty("redis.passengerflowprofile.key")
     var flowProfile: String = ""
-    if (jedis.exists(flowProfileKey)) {
-      flowProfile = jedis.get(flowProfileKey)
-    } else {
-      // TODO:从hive中取出最新的组织关系配置
-
-    }
-    val gson = new Gson()
-    val profiles: Array[PassengerFlowProfile] = gson.fromJson(flowProfile, classOf[Array[PassengerFlowProfile]])
-
-    val list = scala.collection.mutable.ArrayBuffer[(String, String, String)]()
-    if (profiles != null && profiles.length > 0) {
-      profiles.foreach(s => {
-        if (s.devices != null && s.devices.length > 0) {
-          s.devices.foreach(r => {
-            list ++= Array((r.deviceId, s.organizId, r.countType))
-          })
+    try {
+      if (jedis.exists(flowProfileKey)) {
+        flowProfile = jedis.get(flowProfileKey)
+      } else {
+        // TODO:从hive中取出最新的组织关系配置
+        val df: DataFrame = spark.sql("SELECT deal_data FROM passenger_flow.passenger_flow_profile ORDER BY sink_date DESC limit 1")
+        val rows: util.List[Row] = df.collectAsList()
+        if (!rows.isEmpty) {
+          val row: Row = rows.get(0)
+          flowProfile = row.get(0).toString
         }
-      })
+      }
+      val gson = new Gson()
+      val profiles: Array[PassengerFlowProfile] = gson.fromJson(flowProfile, classOf[Array[PassengerFlowProfile]])
+      val list = scala.collection.mutable.ArrayBuffer[(String, String, String)]()
+      if (profiles != null && profiles.length > 0) {
+        profiles.foreach(s => {
+          if (s.devices != null && s.devices.length > 0) {
+            s.devices.foreach(r => {
+              list ++= Array((r.deviceId, s.organizId, r.countType))
+            })
+          }
+        })
+      }
+      list.toArray
+    } catch {
+      case e: Exception => {
+        logger.error("获取解析客流配置信息异常", e)
+        throw  e
+      }
     }
-    list.toArray
   }
 }

@@ -20,7 +20,7 @@ object LogicData {
     * @param record
     * @param tuple
     */
-  def bigScreen(pipeline: Pipeline, record: MyRecord, broadcast: Broadcast[Array[(String, String, String)]]): Unit = {
+  def bigScreen(pipeline: Pipeline, record: PassengerFlowRecord, broadcast: Broadcast[Array[(String, String, String)]]): Unit = {
 
     val year = record.startTime.substring(0, 4)
     val month = record.startTime.substring(4, 6)
@@ -90,10 +90,10 @@ object LogicData {
     * @param record
     * @param tuple
     */
-  def passenge(pipeline: Pipeline, record: MyRecord, broadcast: Broadcast[Array[(String, String, String)]]): Unit = {
+  def passengerflow(pipeline: Pipeline, record: PassengerFlowRecord, broadcast: Broadcast[Array[(String, String, String)]]): Unit = {
     broadcast.value.foreach(tuple => {
       if (tuple._1 == record.deviceId) {
-        //        println(s"=== ${tuple._2} ====== ${record.deviceId} ===== ${record.inNum} ===== ${record.outNum}")
+//        println(s"=== ${tuple._2} ====== ${record.deviceId} ===== ${record.inNum} ===== ${record.outNum}")
         pipeline.hincrBy(s"${passflowNamespace}:${record.startTime.substring(0, 8)}:${tuple._2}", record.startTime.substring(8, 12), record.inNum + record.outNum)
         pipeline.expire(s"${passflowNamespace}:${record.startTime.substring(0, 8)}:${tuple._2}", 60 * 60 * 24 * 7)
       }

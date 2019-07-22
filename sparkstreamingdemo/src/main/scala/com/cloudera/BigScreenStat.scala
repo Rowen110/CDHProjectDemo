@@ -1,7 +1,10 @@
 package com.cloudera
 
 import java.util
+import java.util.UUID
 
+import com.cloudera.common.{CommonMessage, Header, HeaderConstant}
+import com.cloudera.utils.DateUtils
 import com.google.gson.Gson
 import redis.clients.jedis.Jedis
 
@@ -21,21 +24,8 @@ object BigScreenStat {
 
   val bigscreen: String = ConfigUtils.getProperty("redis.namespace.bigscreen")
 
-  val DAY_MAP = Map[String,Long](
-    "0000" -> 0,"0030" -> 0,
-    "0100" -> 0,"0130" -> 0,"0200" -> 0,"0230" -> 0,"0300" -> 0,"0330" -> 0,"0400" -> 0,"0430" -> 0,"0500" -> 0,"0530" -> 0,
-    "0600" -> 0,"0630" -> 0,"0700" -> 0,"0730" -> 0,"0800" -> 0,"0830" -> 0,"0900" -> 0,"0930" -> 0,"1000" -> 0,"1030" -> 0,
-    "1100" -> 0,"1130" -> 0,"1200" -> 0,"1230" -> 0,"1300" -> 0,"1330" -> 0,"1400" -> 0,"1430" -> 0,"1500" -> 0,"1530" -> 0,
-    "1600" -> 0,"1630" -> 0,"1700" -> 0,"1730" -> 0,"1800" -> 0,"1830" -> 0,"1900" -> 0,"1930" -> 0,"2000" -> 0,"2030" -> 0,
-    "2100" -> 0,"2130" -> 0,"2200" -> 0,"2230" -> 0,"2300" -> 0,"2330" -> 0,"2400" -> 0
-  )
-  val MONTH_MAP = Map[String,Long](
-    "01" -> 0,"02" -> 0,"03" -> 0,"04" -> 0,"05" -> 0,"06" -> 0,
-    "07" -> 0,"08" -> 0,"09" -> 0,"10" -> 0,"11" -> 0,"12" -> 0,"13" ->0,
-    "14" -> 0,"15" -> 0,"16" -> 0,"17" -> 0,"18" -> 0,"19" -> 0,"20" ->0,
-    "21" -> 0,"21" -> 0,"22" -> 0,"23" -> 0,"24" -> 0,"25" -> 0,"26" ->0,
-    "27" -> 0,"28" -> 0,"29" -> 0,"30" -> 0,"31" -> 0
-  )
+  val DAY_MAP = Map[String, Long]("0000" -> 0, "0030" -> 0, "0100" -> 0, "0130" -> 0, "0200" -> 0, "0230" -> 0, "0300" -> 0, "0330" -> 0, "0400" -> 0, "0430" -> 0, "0500" -> 0, "0530" -> 0, "0600" -> 0, "0630" -> 0, "0700" -> 0, "0730" -> 0, "0800" -> 0, "0830" -> 0, "0900" -> 0, "0930" -> 0, "1000" -> 0, "1030" -> 0, "1100" -> 0, "1130" -> 0, "1200" -> 0, "1230" -> 0, "1300" -> 0, "1330" -> 0, "1400" -> 0, "1430" -> 0, "1500" -> 0, "1530" -> 0, "1600" -> 0, "1630" -> 0, "1700" -> 0, "1730" -> 0, "1800" -> 0, "1830" -> 0, "1900" -> 0, "1930" -> 0, "2000" -> 0, "2030" -> 0, "2100" -> 0, "2130" -> 0, "2200" -> 0, "2230" -> 0, "2300" -> 0, "2330" -> 0, "2400" -> 0)
+  val MONTH_MAP = Map[String, Long]("01" -> 0, "02" -> 0, "03" -> 0, "04" -> 0, "05" -> 0, "06" -> 0, "07" -> 0, "08" -> 0, "09" -> 0, "10" -> 0, "11" -> 0, "12" -> 0, "13" -> 0, "14" -> 0, "15" -> 0, "16" -> 0, "17" -> 0, "18" -> 0, "19" -> 0, "20" -> 0, "21" -> 0, "21" -> 0, "22" -> 0, "23" -> 0, "24" -> 0, "25" -> 0, "26" -> 0, "27" -> 0, "28" -> 0, "29" -> 0, "30" -> 0, "31" -> 0)
 
 
   /**
@@ -50,7 +40,7 @@ object BigScreenStat {
 
     val length: Int = date.length
     var inKey, outKey, key: String = ""
-    var defaultMap = Map[String,Long]()
+    var defaultMap = Map[String, Long]()
     var condition = ""
 
     if (length == 4) {
@@ -58,7 +48,7 @@ object BigScreenStat {
       inKey = s"${bigscreen}:${year}:in:${organizId}"
       outKey = s"${bigscreen}:${year}:out:${organizId}"
       key = s"${year}_${organizId}"
-
+      condition = year + "12"
     } else if (length == 6) {
       val year = date.substring(0, 4)
       val month = date.substring(4, length)
@@ -66,9 +56,9 @@ object BigScreenStat {
       outKey = s"${bigscreen}:${year}:${month}:out:${organizId}"
       key = s"${year}${month}_${organizId}"
       defaultMap = MONTH_MAP
-      if (date == DateUtils.getCurrentDay("yyyyMM")){
+      if (date == DateUtils.getCurrentDay("yyyyMM")) {
         condition = DateUtils.getCurrentDay("dd")
-      }else{
+      } else {
         condition = DateUtils.getMonthLastDay(date)
       }
 
@@ -80,9 +70,9 @@ object BigScreenStat {
       outKey = s"${bigscreen}:${year}:${month}:${day}:out:${organizId}"
       key = s"${year}${month}${day}_${organizId}"
       defaultMap = DAY_MAP
-      if (date < DateUtils.getCurrentDay("yyyyMMdd")){
+      if (date < DateUtils.getCurrentDay("yyyyMMdd")) {
         condition = "2400"
-      }else{
+      } else {
         condition = DateUtils.getCurrentDay("HHmm")
       }
     } else {
@@ -123,8 +113,7 @@ object BigScreenStat {
     //    (年2019_org1, 该年累计, 该年每月总计,该年每月进总计,该年每月出总计)
     //    (月201907_org1, 该月累计, 该月每天总计,该月每天进总计,该月每天出总计)
     //    (某日20190708_org1, 该天累计, 该天每半小时总计,该天每半小时进总计,该天每半小时出总计)
-
-//    println((key, totalCount, totalMap, inTotalCount, inMap, outTotalCount, outMap))
+//        println((key, totalCount, totalMap, inTotalCount, inMap, outTotalCount, outMap))
     (key, totalCount, totalMap, inTotalCount, inMap, outTotalCount, outMap)
   }
 
@@ -160,86 +149,68 @@ object BigScreenStat {
     val yearTuple: (String, Long, Map[String, Long], Long, Map[String, Long], Long, Map[String, Long]) = getBigScreenStat(jedis, organizId, year)
 
     //全年游客累计 yearIntotal
-    println(s"全年游客累计: ${yearTuple._4}")
-    //当月进岛游客累计 monthInTotal
-    println(s"当月进岛游客累计: ${monthTuple._4}")
-    //当日累计进岛人数 dayInTotal
-    println(s"当日累计进岛人数: ${dayTuple._4}")
-    //当日出岛人数 dayOutTotal
-    println(s"当日出岛人数${dayTuple._6}")
-    //实时在岛人数 dayOnTotal
-    println(s"实时在岛人数: ${dayTuple._4 - dayTuple._6}")
-    //当日各时段进岛人数分布图 halfhourDistribute
-    println(s"当日各时段进岛人数分布图: ${dayTuple._5}")
-    //本月进岛人数走势 monthDistribute
-    println(s"本月进岛人数走势: ${monthTuple._5}")
-    //上月进岛人数 lastMonthDistribute
-    println(s"上月进岛人数走势: ${lastMonthTuple._5}")
-    //未来7天进岛人数预测 sevenDayForecast
-    val longs: List[Long] = getSevenDayForecast(jedis, organizId)
-    println(s"未来7天进岛人数预测: ${longs}")
+//    println(s"全年游客累计: ${yearTuple._4}") //当月进岛游客累计 monthInTotal
+//    println(s"当月进岛游客累计: ${monthTuple._4}") //当日累计进岛人数 dayInTotal
+//    println(s"当日累计进岛人数: ${dayTuple._4}") //当日出岛人数 dayOutTotal
+//    println(s"当日出岛人数${dayTuple._6}") //实时在岛人数 dayOnTotal
+//    println(s"实时在岛人数: ${dayTuple._4 - dayTuple._6}") //当日各时段进岛人数分布图 halfhourDistribute
+//    println(s"当日各时段进岛人数分布图: ${dayTuple._5}") //本月进岛人数走势 monthDistribute
+//    println(s"本月进岛人数走势: ${monthTuple._5}") //上月进岛人数 lastMonthDistribute
+//    println(s"上月进岛人数走势: ${lastMonthTuple._5}")
+//    //未来7天进岛人数预测 sevenDayForecast
+    val sevenDayForecast: List[Long] = getSevenDayForecast(jedis, organizId)
+//    println(s"未来7天进岛人数预测: ${sevenDayForecast}")
 
 
     val gson = new Gson()
     println("=====================================================================================================")
-    val timestrap: Long = DateUtils.getCurrentDay()
-    val out = BigScreenStatOut(timestrap,yearTuple._4,monthTuple._4,dayTuple._4,dayTuple._6,dayTuple._4 - dayTuple._6,dayTuple._5,monthTuple._5,lastMonthTuple._5,getSevenDayForecast(jedis, organizId))
-    println(out)
-    println(s"输出json=====${gson.toJson(out)}")
-
-    gson.toJson(out)
+    val out = BigScreenStatOut(yearTuple._4, monthTuple._4, dayTuple._4, dayTuple._6, dayTuple._4 - dayTuple._6, dayTuple._5, monthTuple._5, lastMonthTuple._5, sevenDayForecast)
+    val message: CommonMessage = constructPassengerFlowToBigScreen(out)
+    println(s"输出json=====${gson.toJson(message)}")
+    gson.toJson(message)
   }
 
-  def getSevenDayForecast(jedis: Jedis,organizId:String): List[Long] = {
+  /**
+    * 构建客流统计数据输出到大屏对象
+    * @param payload
+    * @return
+    */
+  def constructPassengerFlowToBigScreen(payload:Object): CommonMessage ={
+    val uuid: String = UUID.randomUUID().toString.replace("-","").toUpperCase
+    val timestrap: String = DateUtils.getCurrentDay().toString
+    val header: Header = new Header (
+      uuid, timestrap, HeaderConstant.PASSENGET_FLOW_VERSION,
+      HeaderConstant.PASSENGET_FLOW_PRODUCTID,
+      HeaderConstant.PASSENGET_FLOW_SOURCEAPPID,
+      HeaderConstant.PASSENGET_FLOW_DATAFAMILY
+    )
+    new CommonMessage(header, payload)
+  }
+
+  def getSevenDayForecast(jedis: Jedis, organizId: String): List[Long] = {
     var SevenDayForecast = scala.collection.mutable.ArrayBuffer[Long]()
 
-    for (i <- 1 until 8){
+    for (i <- 1 until 8) {
       var count = 0l
-      for(j <- 1 until 8){
-        if(!(i == 7 && j == 1)) {
-//          println(s"==前${j}周===${DateUtils.getAppointDay("yyyyMMdd", -7 * j + i)}")
-          val day: String = DateUtils.getAppointDay("yyyyMMdd", -7 * j + i )
+      for (j <- 1 until 8) {
+        if (!(i == 7 && j == 1)) {
+          //          println(s"==前${j}周===${DateUtils.getAppointDay("yyyyMMdd", -7 * j + i)}")
+          val day: String = DateUtils.getAppointDay("yyyyMMdd", -7 * j + i)
           count += getBigScreenStat(jedis, organizId, day)._4
         }
-      }
-//      println(s"==========================未来第${i}天===========$count=====================")
-      if(i == 7){
-        SevenDayForecast ++= Array(count/6)
-      }else{
-        SevenDayForecast ++= Array(count/7)
+      } //      println(s"==========================未来第${i}天===========$count=====================")
+      if (i == 7) {
+        SevenDayForecast ++= Array(count / 6)
+      } else {
+        SevenDayForecast ++= Array(count / 7)
       }
     }
     SevenDayForecast.toList
   }
-
-
-  def main(args: Array[String]): Unit = {
-    JedisPoolUtils.makePool(ConfigUtils.getRedisConfig)
-    val jedis: Jedis = JedisPoolUtils.getPool.getResource
-    println("201907".substring(6))
-    getBigScreenStat(jedis, "org1", "2019")
-    getBigScreenStat(jedis, "org1", "201907")
-    getBigScreenStat(jedis, "org1", "20190708")
-    getBigScreenStat(jedis, "org1", "20190709")
-    println("------------------------------------------------------------------------")
-    getBigScreenStat(jedis, "org1", "20190702")
-    val incountTotal = jedis.hget(s"bigscreen:2019:in:org1", s"07").toLong
-    val outcountTotal = jedis.hget(s"bigscreen:2019:out:org1", s"07").toLong
-
-    println(s"incountTotal:${incountTotal} === outcountTotal:${outcountTotal}")
-    println("------------------------------------------------------------------------")
-    getBigScreenStatResult(jedis)
-    println(getSevenDayForecast(jedis,"org1"))
-    jedis.close()
-  }
 }
 
 
-case class BigScreenStatOut(timestrap: Long,yearIntotal: Long, monthInTotal: Long, dayInTotal: Long,
-                            dayOutTotal: Long, dayOnTotal: Long, halfhourDistribute: util.Map[String, Long],
-                            monthDistribute: util.Map[String, Long], lastMonthDistribute: util.Map[String, Long],
-                            sevenDayForecast: util.List[Long]
-                           ) extends Serializable;
+case class BigScreenStatOut(yearIntotal: Long, monthInTotal: Long, dayInTotal: Long, dayOutTotal: Long, dayOnTotal: Long, halfhourDistribute: util.Map[String, Long], monthDistribute: util.Map[String, Long], lastMonthDistribute: util.Map[String, Long], sevenDayForecast: util.List[Long]) extends Serializable;
 
 //全年游客累计 yearIntotal
 //当月进岛游客累计 monthInTotal

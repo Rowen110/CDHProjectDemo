@@ -1,6 +1,7 @@
-package com.cloudera
+package com.cloudera.common
 
 import java.util.concurrent.Future
+
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord, RecordMetadata}
 
 class KafkaSink[K, V](createProducer: () => KafkaProducer[K, V]) extends Serializable {

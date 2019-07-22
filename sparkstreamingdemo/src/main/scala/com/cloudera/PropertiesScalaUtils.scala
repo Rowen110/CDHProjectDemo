@@ -1,11 +1,11 @@
 package com.cloudera
 
+import java.io.InputStream
 import java.util.Properties
 
 import org.apache.log4j.Logger
 
 object PropertiesScalaUtils {
-
 
   val logger = Logger.getLogger(this.getClass)
 
@@ -13,7 +13,7 @@ object PropertiesScalaUtils {
     val properties = new Properties()
     try {
       //文件要放到resource文件夹下
-      val in = PropertiesScalaUtils.getClass.getClassLoader.getResourceAsStream(filePath)
+      val in: InputStream = PropertiesScalaUtils.getClass.getClassLoader.getResourceAsStream(filePath)
       properties.load(in)
       properties
     } catch {
