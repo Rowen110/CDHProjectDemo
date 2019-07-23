@@ -4,7 +4,7 @@ import com.cloudera.utils.{JedisPoolUtils, PropertiesScalaUtils}
 import org.apache.kafka.clients.consumer.{ConsumerConfig, ConsumerRecord}
 import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.common.serialization.StringDeserializer
-import org.apache.log4j.Logger
+import org.apache.log4j.{Level, Logger}
 import org.apache.spark.{SparkConf, TaskContext}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.streaming.dstream.InputDStream
@@ -12,11 +12,16 @@ import org.apache.spark.streaming.kafka010._
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 import redis.clients.jedis.{Jedis, Pipeline}
 
+
 object PassengerFlowConsumerRedis {
 
   private val logger: Logger = Logger.getLogger(this.getClass)
 
   def main(args: Array[String]): Unit = {
+
+    Logger.getLogger("org.apache.spark").setLevel(Level.INFO)
+    Logger.getLogger("org.eclipse.jetty.server").setLevel(Level.INFO)
+    Logger.getLogger("org.apache.kafka.clients.consumer").setLevel(Level.INFO)
 
     val properties = PropertiesScalaUtils.loadProperties("passenger_flow.properties")
     val kafkaParams = Map[String, Object](
@@ -27,7 +32,7 @@ object PassengerFlowConsumerRedis {
       ConsumerConfig.AUTO_OFFSET_RESET_CONFIG -> properties.getProperty("kafka.auto.offset.reset"),
       ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG -> (false: java.lang.Boolean))
 
-    val conf = new SparkConf().setIfMissing("spark.master", "local[2]").setAppName("UserCountStat")
+    val conf = new SparkConf().setIfMissing("spark.master", "local[4]").setAppName("UserCountStat")
 
     val streamingContext = new StreamingContext(conf, Seconds(5))
 
@@ -43,10 +48,11 @@ object PassengerFlowConsumerRedis {
 
     val jedis: Jedis = JedisPoolUtils.getPool.getResource
 
-    val partition = 3
-    val topics = Array("test1","test2","test3")
+    val topicsPartition = Map("topic_1"-> 3,"topic_2"-> 4,"topic_3"-> 5)
+    val topics = topicsPartition.keys.toList
 
-    val fromOffsets: Map[TopicPartition, Long] = readOffsets(jedis, topics, partition)
+
+    val fromOffsets: Map[TopicPartition, Long] = readOffsets(jedis, topicsPartition)
 
     val kafkaStream: InputDStream[ConsumerRecord[String, String]] = KafkaUtils.createDirectStream(
       streamingContext,
@@ -64,8 +70,7 @@ object PassengerFlowConsumerRedis {
         rdd.foreachPartition(partition=>{
 
           val offset: OffsetRange = offsetRanges(TaskContext.get.partitionId)
-
-          println(s"${offset.topic} ${offset.partition} ${offset.fromOffset} ${offset.untilOffset}")
+          logger.info(s"${offset.topic} ${offset.partition} ${offset.fromOffset} ${offset.untilOffset}")
 
           val jedisClient = JedisPoolUtils.getPool.getResource
 
@@ -77,11 +82,11 @@ object PassengerFlowConsumerRedis {
           partition.foreach(record=>{
             //自己的计算逻辑
             println(record)
-            println("=========================================")
+            println(s"===============${record.topic()}_${record.partition()}====================")
           })
           //更新Offset
           offsetRanges.foreach { offsetRange =>
-            println("partition : " + offsetRange.partition + " fromOffset:  " + offsetRange.fromOffset + " untilOffset: " + offsetRange.untilOffset)
+            logger.info(s"topic: ${offsetRange.topic} === partition: ${offsetRange.partition} === fromOffset: ${offsetRange.fromOffset} === untilOffset: ${offsetRange.untilOffset}")
             val topic_partition_key = offsetRange.topic + "_" + offsetRange.partition
             pipline.set(topic_partition_key, offsetRange.untilOffset.toString)
           }
@@ -125,47 +130,29 @@ object PassengerFlowConsumerRedis {
 
   }
 
-  def readOffsets(jedis: Jedis, topics: Array[String], partition: Int): Map[TopicPartition, Long] = {
+  def readOffsets(jedis: Jedis, topicsPartition: Map[String,Int]): Map[TopicPartition, Long] = {
     //设置每个分区起始的Offset
     var fromOffsets: Map[TopicPartition, Long] = Map()
-
-//    val topics = Map("test1"-> 2,"test2"-> 3,"test3"-> 4)
-//    topics.foreach(topic => {
-//      var fromOffsets1: Map[TopicPartition, Long] = Map()
-//      println(topic)
-//      for (i <- 0 until topic._2.toInt) {
-//        val topic_partition_key = topic + "_" + i
-//        if (!jedis.exists(topic_partition_key)) {
-//          jedis.set(topic_partition_key, "0")
-//        }
-//        val lastSavedOffset = jedis.get(topic_partition_key)
-//        fromOffsets1 += ((new TopicPartition(topic._1, i) -> lastSavedOffset.toLong))
-//      }
-//      fromOffsets = fromOffsets1
-//    })
-
-    for (topic <- topics){
-
-      for (i <- 0 until partition) {
-        val topic_partition_key = topic + "_" + i
-
-        if (!jedis.exists(topic_partition_key)) {
-          jedis.set(topic_partition_key, "0")
-        }
-        val lastSavedOffset = jedis.get(topic_partition_key)
-
-        if (null != lastSavedOffset) {
-          try {
-            fromOffsets += ((new TopicPartition(topic, i) -> lastSavedOffset.toLong))
-          } catch {
-            case ex: Exception => println(ex.getMessage)
-              println("get lastSavedOffset error, lastSavedOffset from redis [" + lastSavedOffset + "] ")
-              System.exit(1)
+    try {
+      jedis.select(1)
+      topicsPartition.foreach(topic => {
+        var topicFromOffsets: Map[TopicPartition, Long] = Map()
+        for (i <- 0 until topic._2.toInt) {
+          val topic_partition_key = topic._1 + "_" + i
+          if (!jedis.exists(topic_partition_key)) {
+            jedis.set(topic_partition_key, "0")
           }
+          val lastSavedOffset = jedis.get(topic_partition_key)
+          logger.info(s"topic ${topic} partition ${i} get lastSavedOffset from redis: ${lastSavedOffset}")
+          topicFromOffsets += (new TopicPartition(topic._1, i) -> lastSavedOffset.toLong)
         }
-      }
+        fromOffsets ++= topicFromOffsets
+      })
+    }catch {
+      case e: Exception =>
+        logger.error("readOffsets error ",e)
+        System.exit(1)
     }
-    jedis.close()
     fromOffsets
   }
 }
