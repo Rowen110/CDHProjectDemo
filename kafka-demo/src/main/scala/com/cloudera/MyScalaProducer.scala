@@ -25,15 +25,15 @@ object MyScalaProducer {
     props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, classOf[StringSerializer].getName)
 
     val producer = new KafkaProducer[String, String](props)
-
-    val TOPIC_NAME = "test3"
+    val a = 3
+    val TOPIC_NAME = s"topic_$a"
 
     // 产生并发送消息
-    val events = 100000
+    val events = 50 * a
     for (i <- 0 until events) {
-      val key = "Key-test3-" + i
+      val key = s"Key-topic_$a-" + i
       val runtime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date())
-      val message = s"test3|$i|$runtime|${UUID.randomUUID()}"
+      val message = s"topic_$a|$i|$runtime|${UUID.randomUUID()}"
       val record = new ProducerRecord[String, String](TOPIC_NAME, key, message)
       producer.send(record)
       println(key + " ---- " + message)
