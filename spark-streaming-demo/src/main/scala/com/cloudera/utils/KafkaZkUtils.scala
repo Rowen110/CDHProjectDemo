@@ -75,6 +75,7 @@ object KafkaZkUtils {
     logger.info("Saving offsets to zookeeper")
 
     val offsetsRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
+
     offsetsRanges.foreach(offsetRange => logger.debug(s"Using ${offsetRange}"))
 
     val offsetsRangesStr = offsetsRanges.map(offsetRange => s"${offsetRange.partition}:${offsetRange.untilOffset}").mkString(",")

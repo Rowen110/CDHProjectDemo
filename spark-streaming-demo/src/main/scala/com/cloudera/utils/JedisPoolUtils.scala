@@ -3,6 +3,7 @@ package com.cloudera.utils
 import redis.clients.jedis.{JedisPool, JedisPoolConfig}
 
 case class RedisConfig(redisHost: String, redisPort: Int, redisTimeout: Int, maxTotal: Int, maxIdle: Int, minIdle: Int) extends  Serializable
+
 object JedisPoolUtils extends Serializable {
 
   @transient private var pool: JedisPool = null
